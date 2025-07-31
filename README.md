@@ -37,7 +37,28 @@ APPSHEET_APP_ID="your-app-id"
 APPSHEET_API_KEY="your-api-key"
 ```
 
-### 3. Create GCP Service Account + GitHub Secret
+### 3. Get Your Google OAuth Client ID
+
+Visit the [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
+
+1. Go to **APIs & Services → Credentials**
+2. Click **Create Credentials → OAuth 2.0 Client ID**
+3. Choose **Web application**
+4. Set an appropriate name (e.g. `Roofbox Planner Web`)
+5. Under **Authorized JavaScript origins**, add:
+   ```
+   http://localhost:5173
+   ```
+   and your deployed URL later (e.g. `https://yourproject.web.app`)
+6. Under **Authorized redirect URIs**, you can leave this blank unless needed
+7. After creation, you'll see your **Client ID** — copy this into `.env.local` as:
+
+```env
+OAUTH_CLIENT_ID="your-client-id-here"
+```
+
+---
+### 4. Create GCP Service Account + GitHub Secret
 
 ```bash
 chmod +x ./scripts/create-service-account.sh
