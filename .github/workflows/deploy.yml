@@ -1,0 +1,43 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches: [main]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY_JSON }}
+          export_default_credentials: true
+
+      - name: Deploy Cloud Function
+        run: |
+          cd backend
+          npm install
+          gcloud functions deploy getBookings \
+            --runtime nodejs20 \
+            --trigger-http \
+            --allow-unauthenticated \
+            --set-env-vars "APPSHEET_API_KEY=${{ secrets.APPSHEET_API_KEY }},APPSHEET_APP_ID=${{ secrets.APPSHEET_APP_ID }},GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }},ALLOWED_USERS=${{ secrets.ALLOWED_USERS }}"
+
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm install
+          echo "VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}" > .env
+          npm run build
+
+      - name: Deploy to Firebase Hosting
+        run: firebase deploy --only hosting
